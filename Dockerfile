@@ -9,6 +9,6 @@ RUN mvn clean package
 
 FROM openjdk:19
 
-COPY --from=build target/spring-boot-jwt-0.0.1-SNAPSHOT.jar hotel-api.jar
+COPY --from=build target/simpleBankApp-0.0.1-SNAPSHOT.jar bank-api.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","hotel-api.jar"]
+ENTRYPOINT ["java","-jar","bank-api.jar"]
