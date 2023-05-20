@@ -53,7 +53,8 @@ public class Controller {
     @PostMapping("/create_account")
     public ResponseEntity<?> createUser(@RequestBody RegistrationDto registrationDto){
      User user =  createNewUserService.createUser(registrationDto);
-        return  new ResponseEntity<Object>(user,HttpStatus.CREATED);}
+        return  new ResponseEntity<Object>(user,HttpStatus.CREATED);
+    }
     @GetMapping("/account_info/{accountNumber}")
     public ResponseEntity<?> getuserInfo(@PathVariable String accountNumber ){
 Optional<User> optionalUser = Optional.ofNullable( dataBase.findUserByAccountNumber(accountNumber));
@@ -71,13 +72,13 @@ else{
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<?> withdraw(@RequestBody TransactionDto transactionDto, HttpRequest request){;
+    public ResponseEntity<?> withdraw(@RequestBody TransactionDto transactionDto){
         customerWithdrawService.withdraw(transactionDto.getAmount());
             return  new ResponseEntity<Object>("Success",HttpStatus.OK);
         }
 
-    @PostMapping("/deposit")
-    public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto, HttpRequest request){
+    @RequestMapping(value = "/deposit", method = RequestMethod.POST)
+    public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto){
         depositService.deposit(transactionDto.getAmount());
         return  new ResponseEntity<Object>("Success",HttpStatus.OK);
     }
