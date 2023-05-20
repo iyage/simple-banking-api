@@ -36,6 +36,10 @@ public class SimpleBankAppApplication {
 
     private ApiKey apiKey(){
         return new ApiKey("JWT", AUTHORIZATION_HEADER, "header");
+
+    }
+    private SecurityContext securityContext(){
+        return SecurityContext.builder().securityReferences(defaultAuth()).build();
     }
 
 
@@ -48,9 +52,8 @@ public class SimpleBankAppApplication {
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
+
                 .build();
-
-
     }
 
     private ApiInfo apiInfo() {
@@ -71,9 +74,7 @@ public class SimpleBankAppApplication {
                 "https://github.com/iyage",
                 Collections.emptyList());
     }
-    private SecurityContext securityContext(){
-        return SecurityContext.builder().securityReferences(defaultAuth()).build();
-    }
+
 
     private List<SecurityReference> defaultAuth(){
         AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");

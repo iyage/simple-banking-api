@@ -3,29 +3,26 @@ import com.example.simplebankapp.AuthenticationResponse;
 import com.example.simplebankapp.MyUserDetailsService;
 import com.example.simplebankapp.dto.LoginDto;
 import com.example.simplebankapp.dto.RegistrationDto;
+import com.example.simplebankapp.dto.ResponseDto;
 import com.example.simplebankapp.dto.TransactionDto;
-import com.example.simplebankapp.models.AccountStatement;
 import com.example.simplebankapp.models.DataBase;
 import com.example.simplebankapp.models.User;
 import com.example.simplebankapp.service.CreateNewUserService;
-import com.example.simplebankapp.service.serviceimplementation.CustomerDepositServiceImpl;
 import com.example.simplebankapp.service.serviceimplementation.CustomerWithdrawServiceImpl;
 import com.example.simplebankapp.service.serviceimplementation.DepositServiceImpl;
-import com.example.simplebankapp.service.serviceimplementation.GetAccounStatementService;
+import com.example.simplebankapp.service.serviceimplementation.GetAccountStatementService;
 import com.example.simplebankapp.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 public class Controller {
@@ -35,8 +32,6 @@ public class Controller {
     DataBase dataBase= new DataBase();
     @Autowired
     CreateNewUserService createNewUserService;
-    @Autowired
-    CustomerDepositServiceImpl  customerDepositService;
 
     @Autowired
     private JwtUtil jwtTokenUtil;
@@ -44,7 +39,7 @@ public class Controller {
     @Autowired
     private MyUserDetailsService userDetailsService;
     @Autowired
-    private GetAccounStatementService getAccounStatementService;
+    private GetAccountStatementService getAccountStatementService;
     @Autowired
     private DepositServiceImpl depositService;
 
@@ -52,55 +47,68 @@ public class Controller {
 
     @PostMapping("/create_account")
     public ResponseEntity<?> createUser(@RequestBody RegistrationDto registrationDto){
-     User user =  createNewUserService.createUser(registrationDto);
-        return  new ResponseEntity<Object>(user,HttpStatus.CREATED);
+     ResponseDto responseDto =  createNewUserService.createUser(registrationDto);
+        if(responseDto.getStatus().equalsIgnoreCase("200"))return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.CREATED);
+        else return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.BAD_REQUEST);
     }
-    @GetMapping("/account_info/{accountNumber}")
-    public ResponseEntity<?> getuserInfo(@PathVariable String accountNumber ){
-Optional<User> optionalUser = Optional.ofNullable( dataBase.findUserByAccountNumber(accountNumber));
-if(optionalUser.isEmpty()) throw  new RuntimeException();
-else{
-    User user = optionalUser.get();
-    return  new ResponseEntity<Object>(user,HttpStatus.OK);
-}
+    @GetMapping("/account_info")
+    public ResponseEntity<ResponseDto> getUserInfo(){
+        ResponseDto responseDto = getAccountStatementService.getAcctInfo();
+        if(responseDto.getStatus().equalsIgnoreCase("200"))return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.OK);
+        else return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.BAD_REQUEST);
 
     }
-    @GetMapping("/account_statement/{accountNumber}")
-    public ResponseEntity<?> accountStatementList(@PathVariable String accountNumber ) throws Throwable {
-         List<AccountStatement> accounts = getAccounStatementService.getAccountStatementList(accountNumber);
-           return ResponseEntity.ok(accounts);
+    @GetMapping("/account_statement")
+    public ResponseEntity<ResponseDto> accountStatementList() {
+         ResponseDto responseDto = getAccountStatementService.getAccountStatementList();
+         if(responseDto.getStatus().equalsIgnoreCase("200"))return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.OK);
+         else return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<?> withdraw(@RequestBody TransactionDto transactionDto){
-        customerWithdrawService.withdraw(transactionDto.getAmount());
-            return  new ResponseEntity<Object>("Success",HttpStatus.OK);
+    public ResponseEntity<ResponseDto> withdraw(@RequestBody TransactionDto transactionDto){
+      ResponseDto responseDto =  customerWithdrawService.withdraw(transactionDto);
+        if(responseDto.getStatus().equalsIgnoreCase("200"))   return  new ResponseEntity<ResponseDto>(responseDto,HttpStatus.OK);
+        else return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.BAD_REQUEST);
         }
 
     @RequestMapping(value = "/deposit", method = RequestMethod.POST)
-    public ResponseEntity<?> deposit(@RequestBody TransactionDto transactionDto){
-        depositService.deposit(transactionDto.getAmount());
-        return  new ResponseEntity<Object>("Success",HttpStatus.OK);
+    public ResponseEntity<ResponseDto> deposit(@RequestBody TransactionDto transactionDto, HttpServletRequest req){
+        ResponseDto responseDto = depositService.deposit(transactionDto);
+        if(responseDto.getStatus().equalsIgnoreCase("200"))   return  new ResponseEntity<ResponseDto>(responseDto,HttpStatus.OK);
+        else return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.BAD_REQUEST);
     }
+
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginDto loginDto) throws Exception {
+    public ResponseEntity<ResponseDto> createAuthenticationToken(@RequestBody LoginDto loginDto){
 
         try {
-            authenticationManager.authenticate(
+            Authentication auth  = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getUserAccountNumber(), loginDto.getPassword())
             );
+            System.out.println(auth);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            final UserDetails userDetails = userDetailsService
+                    .loadUserByUsername(loginDto.getUserAccountNumber());
+
+            final String jwt = jwtTokenUtil.generateToken(userDetails);
+            ResponseDto responseDto = ResponseDto.builder()
+                    .status("200")
+                    .message("Successfully login")
+                    .data(new AuthenticationResponse(jwt))
+                    .build();
+            return new  ResponseEntity<ResponseDto>(responseDto,HttpStatus.OK);
         }
-        catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+        catch (Exception e) {
+            e.printStackTrace();
+            ResponseDto responseDto = ResponseDto.builder()
+                    .status("400")
+                    .message("Incorrect username or password")
+                    .build();
+            return new   ResponseEntity<ResponseDto>(responseDto,HttpStatus.BAD_REQUEST);
         }
 
 
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(loginDto.getUserAccountNumber());
-
-        final String jwt = jwtTokenUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
 }

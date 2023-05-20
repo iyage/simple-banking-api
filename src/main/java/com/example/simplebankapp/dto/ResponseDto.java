@@ -1,15 +1,16 @@
 package com.example.simplebankapp.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegistrationDto {
-    String firstName;
-    String lastName;
-    String accountPassword;
-    Double initialDeposit;
+@Data
+public class ResponseDto {
+    String message;
+    String status;
+    Object data;
 }

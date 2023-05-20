@@ -19,14 +19,7 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userAccount) throws UsernameNotFoundException {
         Optional<com.example.simplebankapp.models.User> optionalUser =Optional.ofNullable( dataBase.findUserByAccountNumber(userAccount));
-        if(optionalUser.isEmpty()){
-            throw new BadCredentialsException("User name not found");
-        }
-        else{
-
             return new User(optionalUser.get().getAccountNumber(),optionalUser.get().getAccountPassword(),
                     new ArrayList<>());
-        }
-
     }
 }

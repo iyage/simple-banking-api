@@ -1,6 +1,9 @@
 package com.example.simplebankapp.service.serviceimplementation;
 
+import com.example.simplebankapp.dto.ResponseDto;
+import com.example.simplebankapp.dto.TransactionDto;
+
 public interface DepositService {
-    void deposit (Double depositAmount);
+    ResponseDto deposit (TransactionDto transactionDto);
 
 }
