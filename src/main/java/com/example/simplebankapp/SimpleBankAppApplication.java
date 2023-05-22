@@ -58,7 +58,7 @@ public class SimpleBankAppApplication {
 
     private ApiInfo apiInfo() {
         return new ApiInfo(
-                "Hotel Booking API",
+                "Basic Banking  API",
                 "<h2 style='margin:2px'> Author: Ofunrein Iyaghe.</h2> " +
                         "<article> <h2>Description </h2>" +
                         "The Api endpoints help with performing banking operations<br/>" +
