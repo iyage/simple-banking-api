@@ -61,15 +61,13 @@ public class SimpleBankAppApplication {
                 "Hotel Booking API",
                 "<h2 style='margin:2px'> Author: Ofunrein Iyaghe.</h2> " +
                         "<article> <h2>Description </h2>" +
-                        "The Api endpoints help with hotel bookings and reservations, management by third party hotel vendors in various cities in Nigeria<br/>" +
+                        "The Api endpoints help with performing banking operations<br/>" +
                         "<h2>Demo Usage</h2> " +
-                        " Role Admin: Two user with credential (email:yage@gmail.com,password:Yage@123456789)<br/>" +
-                        "Role Client: The user  can register as new client, and make reservation in any of the hotels of his/her choice<br/>" +
                         "<h1>Authorization Header setting: Bearer +token</h1> " +
                         "<article>.<br/>",
                 "1.0",
                 "Free to use",
-                new springfox.documentation.service.Contact("Ofunrein Iyaghe", "https://github.com/iyage", "yahg.concept@gmail.com"),
+                new springfox.documentation.service.Contact("Ofunrein Iyaghe", "https://github.com/iyage/simple-banking-api", "yahg.concept@gmail.com"),
                 "API License",
                 "https://github.com/iyage",
                 Collections.emptyList());
